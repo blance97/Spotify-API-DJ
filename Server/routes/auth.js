@@ -3,8 +3,6 @@ let router = express.Router();
 var querystring = require('querystring');
 var stateKey = 'spotify_auth_state';
 var request = require('request'); 
-var SpotifyWebApi = require('spotify-web-api-node');
-
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
