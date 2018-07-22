@@ -11,32 +11,56 @@ class App extends Component {
   constructor() {
     super();
     spotifyApi.setAccessToken(cookies.get('access_token'));
-    console.log("set")
+    console.log("set: " + cookies.get('access_token'))
   }
 
+  findPlaylist(userId, playlistName, limit, offset) {
+    let d = [];
+    spotifyApi.getUserPlaylists(userId, { limit, offset })
+      .then((data) => {
+        let playlists = data.body.items
+        playlists.forEach(element => {
+          console.log(element.name)
+          if (element.name === playlistName) {
+            console.log('found' + element)
+            // return element
+          }
+        });
+        if (data.body.next === null) {
+          return;
+        } else {
+          this.findPlaylist(userId, playlistName, limit, offset += limit)
+        }
+        console.log('Some information about this playlist', data.body);
+      });
+  }
+
+
   getUser() {
-    let d;
     spotifyApi.getMe().then((response) => {
       console.log(response)
-      spotifyApi.createPlaylist(response['display_name'], 'My Cool Playlist', { 'public': false })
+      this.findPlaylist(response['body']['id'], "My Cool Playlist", 20, 0)
+      spotifyApi.getMyCurrentPlaybackState({
+      })
         .then(function (data) {
-          console.log('Created playlist!');
+          // Output items
+          console.log("Now Playing: ", data.body);
         }, function (err) {
           console.log('Something went wrong!', err);
         });
+      // spotifyApi.createPlaylist(response['body']['id'], 'My Cool Playlist', { 'public': false })
+      // .then(function (data) {
+      //   console.log('Created playlist!');
+      // }, function (err) {
+      //   console.log('Something went wrong!', err);
+      // });
+    }, (err) => {
+      console.log('Something went wrong!', err);
     });
   }
 
   render() {
     this.getUser();
-
-    // spotifyApi.createPlaylist('thelinmichael', 'My Cool Playlist', { 'public' : false })
-    // .then(function(data) {
-    //   console.log('Created playlist!');
-    // }, function(err) {
-    //   console.log('Something went wrong!', err);
-    // });
-
     return (
       <div className="App">
         <header className="App-header">
@@ -46,7 +70,7 @@ class App extends Component {
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
-        <a href='http://localhost:8080/api/auth/login' > Login to Spotify </a>
+        <a href='http://localhost:8080/api/auth/login'> Login to Spotify </a>
       </div>
     );
   }
